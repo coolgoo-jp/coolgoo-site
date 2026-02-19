@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年版 脳の健康維持と機能回復に関する学術報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        .slide-container {
+            aspect-ratio: 16 / 9;
+        }
+
+        @keyframes pulse-custom {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.05); }
+        }
+
+        .animate-pulse-custom {
+            animation: pulse-custom 3s infinite ease-in-out;
+        }
+
+        @keyframes bounce-x {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(15px); }
+        }
+
+        .animate-bounce-x {
+            animation: bounce-x 1.5s infinite ease-in-out;
+        }
+
+        /* 印刷設定 */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-slide {
+                display: flex !important;
+                height: 100vh;
+                width: 100vw;
+                page-break-after: always;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* グラスモーフィズム効果 */
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+
+    <!-- 通常表示エリア -->
+    <div id="presentation-ui" class="min-h-screen flex flex-col print:hidden">
+        
+        <!-- プログレスバー -->
+        <div class="w-full h-2 bg-slate-100 relative z-20">
+            <div id="progress-bar" class="h-full bg-[#10B981] transition-all duration-700 ease-in-out shadow-[0_0_15px_#10B981]" style="width: 10%"></div>
+        </div>
+
+        <!-- ヘッダー -->
+        <header class="px-10 py-3 flex justify-between items-center relative z-30">
+            <div class="flex flex-col text-left">
+                <span class="text-[#0F172A] font-black text-xl tracking-tighter">BRAIN RECOVERY 2026</span>
+            </div>
+            <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md hover:bg-slate-50 transition-all text-[#0F172A] font-bold">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span class="text-sm">PDFとして書き出し</span>
+            </button>
+        </header>
+
+        <!-- メインスライド -->
+        <main class="flex-1 relative z-10 flex flex-col justify-center max-w-[1300px] mx-auto w-full p-4 md:p-8">
+            <div id="slide-frame" class="slide-container bg-white rounded-[60px] shadow-[0_40px_100px_-25px_rgba(0,0,0,0.12)] overflow-hidden border border-slate-50 relative">
+                <div id="slide-content" class="h-full w-full">
+                    <!-- コンテンツがJSで挿入されます -->
+                </div>
+            </div>
+        </main>
+
+        <!-- フッターナビゲーション -->
+        <footer class="px-12 py-6 relative z-20 flex items-center justify-between max-w-[1300px] mx-auto w-full">
+            <div class="flex items-center gap-4 text-slate-400 font-bold uppercase tracking-[0.3em] text-base">
+                <span id="slide-current-num">01</span>
+                <div class="w-10 h-px bg-slate-300"></div>
+                <span id="slide-total-num">10</span>
+            </div>
+            
+            <div class="flex gap-6">
+                <button id="prev-btn" onclick="prevSlide()" class="group flex items-center gap-3 px-8 py-4 rounded-[20px] border-4 bg-white border-slate-100 text-[#0F172A] hover:shadow-xl hover:border-slate-200 active:scale-95 font-black text-lg transition-all disabled:opacity-0 disabled:pointer-events-none">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                    BACK
+                </button>
+                <button id="next-btn" onclick="nextSlide()" class="group flex items-center gap-5 px-12 py-4 rounded-[20px] bg-[#0F172A] text-white shadow-xl hover:shadow-[0_20px_45px_rgba(15,23,42,0.35)] hover:scale-105 active:scale-95 font-black text-lg transition-all disabled:opacity-0 disabled:pointer-events-none">
+                    NEXT
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 印刷用隠しエリア -->
+    <div id="print-area" class="hidden print:block bg-white text-black">
+        <!-- JSで全スライドがここに展開されます -->
+    </div>
+
+    <script>
+        const slideData = [
+            // 0: 表紙
+            {
+                id: 'title',
+                html: `
+                <div class="flex flex-col items-center justify-center h-full text-center px-12 bg-white">
+                    <div class="mb-4 relative">
+                        <div class="absolute inset-0 bg-[#10B981] opacity-20 blur-[80px] rounded-full animate-pulse-custom"></div>
+                        <i data-lucide="brain" class="w-28 h-28 text-[#0F172A] relative z-10" stroke-width="1"></i>
+                    </div>
+                    <h1 class="text-6xl font-black text-[#0F172A] mb-6 leading-[1.1] tracking-tighter">
+                        2026年版 脳の健康維持と<br>機能回復に関する学術報告
+                    </h1>
+                    <div class="w-32 h-2.5 bg-[#F59E0B] mb-6 rounded-full shadow-sm"></div>
+                    <p class="text-2xl text-[#64748B] font-bold tracking-[0.2em] uppercase">Scientific Guidelines for Brain Recovery</p>
+                </div>`
+            },
+            // 1: 結論
+            {
+                id: 'conclusion',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-[#F8FAFC] justify-center">
+                    <div class="flex items-center gap-6 mb-6">
+                        <div class="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 text-[#10B981]">
+                            <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">1. 結論</h2>
+                    </div>
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="bg-white p-10 rounded-[50px] border border-slate-100 shadow-2xl max-w-5xl text-center relative overflow-hidden w-full">
+                            <p class="text-6xl font-black text-[#0F172A] mb-8 leading-tight">
+                                軽度の認知症は<br>
+                                <span class="text-[#10B981] underline decoration-[12px] underline-offset-[16px] decoration-[#10B981]/10 italic">「回復」が可能</span>
+                            </p>
+                            <div class="flex items-center justify-center gap-4 bg-emerald-50 py-5 px-8 rounded-3xl border border-emerald-100">
+                                <i data-lucide="trending-up" class="w-8 h-8 text-[#10B981]"></i>
+                                <p class="text-2xl text-[#0F172A] font-bold">
+                                    脳の機能を正常な状態へ戻すことができます。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 2: 要因
+            {
+                id: 'factors',
+                html: `
+                <div class="flex flex-col h-full px-10 py-6 bg-white justify-center">
+                    <div class="flex items-center gap-5 mb-6">
+                        <i data-lucide="activity" class="w-10 h-10 text-[#0F172A]"></i>
+                        <h2 class="text-3xl font-black text-[#0F172A]">2. 脳を左右する要因</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-[#ECFDF5] p-6 rounded-[40px] border-[5px] border-[#10B981] shadow-lg relative overflow-hidden">
+                            <i data-lucide="trophy" class="absolute -top-4 -right-4 w-32 h-32 text-[#10B981] opacity-10 rotate-12"></i>
+                            <div class="flex items-center gap-6 relative z-10 text-left">
+                                <div class="flex flex-col items-center justify-center bg-[#10B981] text-white rounded-[28px] px-6 py-3 shadow-md">
+                                    <span class="text-lg font-black opacity-80 leading-none">最優先</span>
+                                    <span class="text-4xl font-black tracking-tighter mt-1">第1位</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-4xl font-black text-[#0F172A] mb-1 tracking-tighter">食後の血糖値の乱高下</h3>
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-2xl font-black text-[#047857] italic">リスク 2.65倍</span>
+                                        <span class="text-lg font-bold text-[#64748B]">血管を直接破壊する最大要因</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-left">
+                            <div class="bg-rose-50 p-5 rounded-[32px] border-2 border-rose-100 flex items-center gap-5 shadow-sm">
+                                <span class="text-4xl font-black text-rose-200">2</span>
+                                <div>
+                                    <div class="text-xl font-black text-[#0F172A]">強いストレス</div>
+                                    <div class="text-lg font-bold text-rose-600 italic">2.51倍</div>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 p-5 rounded-[32px] border-2 border-blue-100 flex items-center gap-5 shadow-sm">
+                                <span class="text-4xl font-black text-blue-200">3</span>
+                                <div>
+                                    <div class="text-xl font-black text-[#0F172A]">運動不足</div>
+                                    <div class="text-lg font-bold text-blue-600 italic">1.80倍</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-[#0F172A] p-3.5 rounded-2xl flex items-center gap-4 border-l-8 border-[#F59E0B]">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-[#F59E0B]"></i>
+                            <p class="text-lg font-bold text-white tracking-tight">「優先順位の誤り」は、改善の効率を著しく低下させます。</p>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 3: A-1 血糖
+            {
+                id: 'strategy_a1',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-white justify-center">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-5 text-left">
+                            <div class="p-3.5 bg-emerald-50 rounded-[28px] border border-emerald-100 shadow-sm text-[#10B981]">
+                                <i data-lucide="utensils" class="w-12 h-12"></i>
+                            </div>
+                            <h2 class="text-4xl font-black text-[#0F172A]">A-1. ベジタブル・ファースト</h2>
+                        </div>
+                        <div class="bg-[#10B981] text-white px-6 py-2 rounded-2xl font-black text-xl shadow-md">
+                            最優先アクション
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-12">
+                        <div class="flex-1 text-left">
+                            <p class="text-6xl font-black text-[#0F172A] leading-tight mb-8">
+                                食事の最初に<br><span class="text-[#10B981]">「野菜」</span>を食べる。
+                            </p>
+                            <div class="p-8 bg-[#F8FAFC] rounded-[40px] border-l-[16px] border-[#10B981] shadow-md">
+                                <p class="text-2xl text-[#64748B] font-bold leading-relaxed">
+                                    最大の敵である<span class="text-[#0F172A] font-black underline decoration-6 underline-offset-4 decoration-[#F59E0B]">血糖スパイク</span>を抑制。<br>
+                                    血管の損傷を物理的に遮断します。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex-none w-[280px] h-[280px] bg-[#0F172A] rounded-[50px] flex flex-col items-center justify-center p-6 shadow-xl relative text-white">
+                           <div class="w-full h-full flex flex-col justify-end gap-1.5 border-l border-b border-white/20 p-3">
+                             <div class="flex items-end gap-1.5 h-full w-full">
+                                <div class="w-1/4 h-full bg-[#F59E0B] rounded-t-md animate-pulse"></div>
+                                <div class="w-1/4 h-1/2 bg-[#10B981] rounded-t-md shadow-[0_0_10px_#10B981]"></div>
+                                <div class="w-1/4 h-2/3 bg-[#F59E0B] rounded-t-md"></div>
+                                <div class="w-1/4 h-1/3 bg-[#10B981] rounded-t-md shadow-[0_0_10px_#10B981]"></div>
+                             </div>
+                           </div>
+                           <p class="text-lg font-black mt-3">血糖スパイク抑制</p>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 4: A-2 運動
+            {
+                id: 'strategy_a2',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-[#F8FAFC] justify-center">
+                    <div class="flex items-center gap-6 mb-8 text-left">
+                        <div class="p-3.5 bg-white rounded-[28px] shadow-sm border border-slate-100 text-blue-500">
+                            <i data-lucide="dumbbell" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">A-2. BDNFの活性化</h2>
+                    </div>
+                    <div class="flex items-center gap-12 text-left">
+                        <div class="flex-none w-[300px] h-[300px] bg-white rounded-full flex items-center justify-center relative shadow-xl border-[8px] border-blue-50 overflow-hidden text-blue-500">
+                           <svg viewBox="0 0 100 100" class="w-full h-full p-10 opacity-60">
+                             <circle cx="30" cy="30" r="4" fill="currentColor" />
+                             <circle cx="70" cy="20" r="4" fill="currentColor" />
+                             <circle cx="80" cy="60" r="4" fill="currentColor" />
+                             <circle cx="50" cy="80" r="4" fill="currentColor" />
+                             <circle cx="20" cy="70" r="4" fill="currentColor" />
+                             <line x1="30" y1="30" x2="70" y2="20" stroke="currentColor" stroke-width="1" />
+                             <line x1="70" y1="20" x2="80" y2="60" stroke="currentColor" stroke-width="1" />
+                             <line x1="80" y1="60" x2="50" y2="80" stroke="currentColor" stroke-width="1" />
+                             <line x1="50" y1="80" x2="20" y2="70" stroke="currentColor" stroke-width="1" />
+                             <line x1="20" y1="70" x2="30" y2="30" stroke="currentColor" stroke-width="1" />
+                           </svg>
+                           <i data-lucide="zap" class="text-[#10B981] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 animate-pulse"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-5xl font-black text-[#0F172A] leading-tight mb-8">
+                                運動で<br><span class="text-blue-500 italic">「脳の栄養」</span>を増やす。
+                            </p>
+                            <div class="bg-white p-8 rounded-[40px] shadow-lg border border-slate-50">
+                                <p class="text-2xl text-[#64748B] font-bold leading-relaxed">
+                                    神経を修復させる栄養素<br>
+                                    <span class="text-[#10B981] font-black text-4xl italic">BDNF</span> を活性化。<br>
+                                    脳の自浄能力を極大まで高めます。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 5: B-1 ストレス
+            {
+                id: 'strategy_b1',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-white justify-center items-center text-center">
+                    <div class="w-full flex items-center gap-6 mb-10 text-left">
+                        <div class="p-3.5 bg-rose-50 rounded-[28px] border border-rose-100 shadow-sm text-rose-500">
+                            <i data-lucide="shield-check" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">B-1. ストレスの緩和</h2>
+                    </div>
+                    <h3 class="text-5xl font-black text-[#0F172A] mb-10 leading-tight tracking-tighter">
+                        「海馬」の縮小を<br><span class="text-rose-600 italic underline decoration-[10px] decoration-rose-100 underline-offset-8">物理的</span>に防ぐ。
+                    </h3>
+                    <div class="grid grid-cols-2 gap-8 w-full max-w-5xl text-left">
+                        <div class="p-8 bg-rose-50 rounded-[40px] border border-rose-100 shadow-sm flex flex-col justify-center">
+                            <p class="text-xl text-rose-600 font-bold mb-3 tracking-[0.2em] uppercase">Mechanism</p>
+                            <p class="text-2xl text-[#0F172A] font-black leading-tight">強いストレスは記憶領域を<br><span class="text-rose-600 underline decoration-4 underline-offset-4">直接破壊</span>します。</p>
+                        </div>
+                        <div class="p-8 bg-[#0F172A] rounded-[40px] text-white shadow-xl flex flex-col justify-center text-center">
+                            <p class="text-xl text-[#10B981] font-bold mb-3 uppercase">Solution</p>
+                            <p class="text-2xl font-black leading-tight">リラックスは「防衛」活動。<br>脳を物理的に守る戦略です。</p>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 6: B-2 能動的
+            {
+                id: 'strategy_b2',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-[#F8FAFC] justify-center items-center text-center">
+                    <div class="w-full flex items-center gap-6 mb-8 text-left">
+                        <div class="p-3.5 bg-white rounded-[28px] shadow-sm border border-slate-100 text-orange-500">
+                            <i data-lucide="message-square" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">B-2. 能動的な活動</h2>
+                    </div>
+                    <div class="bg-[#0F172A] p-10 rounded-[60px] text-center shadow-2xl border-b-[14px] border-orange-500 w-full max-w-4xl relative overflow-hidden">
+                        <i data-lucide="zap" class="absolute -top-10 -left-10 w-40 h-40 text-orange-500 opacity-10"></i>
+                        <p class="text-6xl font-black text-white mb-8 leading-tight tracking-tighter italic text-center">
+                            「能動」へのシフト
+                        </p>
+                        <p class="text-3xl text-slate-200 leading-relaxed font-bold mb-6 text-center">
+                            動画をぼんやり見る時間を、<br>
+                            自ら考え、話し、動く時間へ。
+                        </p>
+                        <div class="w-24 h-1 bg-orange-500/50 mx-auto rounded-full"></div>
+                        <p class="text-xl text-slate-400 mt-5 italic text-center">これが脳機能を再起動させる唯一の方法です。</p>
+                    </div>
+                </div>`
+            },
+            // 7: C-1 散歩
+            {
+                id: 'strategy_c1',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-white justify-center text-center">
+                    <div class="w-full flex items-center gap-6 mb-10 text-left">
+                        <div class="p-3.5 bg-yellow-50 rounded-[28px] border border-yellow-100 shadow-sm text-yellow-500">
+                            <i data-lucide="sun" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">C-1. 朝の光と散歩</h2>
+                    </div>
+                    <p class="text-6xl font-black text-[#0F172A] mb-10 leading-tight tracking-tighter">
+                        起床後1時間の光で<br><span class="text-yellow-500">体内時計</span>をリセット。
+                    </p>
+                    <div class="flex items-center justify-center gap-8 bg-slate-50 p-10 rounded-[60px] border border-slate-100 shadow-inner">
+                         <div class="bg-white p-6 rounded-[28px] shadow-lg flex flex-col items-center border border-slate-100">
+                           <i data-lucide="clock" class="w-16 h-16 text-yellow-500 mb-2"></i>
+                           <span class="text-xl font-black text-[#0F172A]">1時間以内</span>
+                         </div>
+                         <i data-lucide="arrow-right" class="w-16 h-16 text-slate-300" stroke-width="3"></i>
+                         <div class="bg-[#0F172A] p-8 rounded-[40px] text-white shadow-xl px-12 relative overflow-hidden">
+                           <p class="text-3xl font-black text-[#10B981] mb-1 italic tracking-tighter text-left text-center">夜の掃除時間</p>
+                           <p class="text-lg text-slate-400 font-bold uppercase text-center">Deep Sleep / Reset</p>
+                         </div>
+                    </div>
+                </div>`
+            },
+            // 8: C-2 昼寝
+            {
+                id: 'strategy_c2',
+                html: `
+                <div class="flex flex-col h-full px-16 py-8 bg-[#0F172A] text-white rounded-inherit relative overflow-hidden justify-center text-center">
+                    <div class="absolute inset-0 bg-blue-500 opacity-5 blur-[200px] rounded-full"></div>
+                    <div class="w-full flex items-center gap-6 mb-10 relative z-10 text-left">
+                        <div class="p-3.5 bg-white/10 rounded-[32px] backdrop-blur-3xl border border-white/10 shadow-xl text-blue-400">
+                            <i data-lucide="moon" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black">C-2. 昼寝の制限</h2>
+                    </div>
+                    <div class="flex flex-col items-center relative z-10">
+                        <p class="text-8xl font-black text-blue-400 italic leading-none tracking-tighter mb-10 drop-shadow-2xl">
+                            20分以内
+                        </p>
+                        <div class="bg-white/5 backdrop-blur-xl p-8 rounded-[48px] border border-white/10 max-w-2xl shadow-2xl">
+                            <p class="text-3xl font-light leading-relaxed text-slate-200">
+                                長すぎる昼寝は<br>
+                                夜の<span class="text-white font-black underline decoration-[6px] decoration-[#10B981] decoration-offset-6 italic">脳の掃除時間</span>を<br>奪ってしまいます。
+                            </p>
+                        </div>
+                    </div>
+                </div>`
+            },
+            // 9: 総括
+            {
+                id: 'summary',
+                html: `
+                <div class="flex flex-col h-full px-12 py-8 bg-[#F8FAFC] justify-center items-center text-center">
+                    <div class="w-full flex items-center gap-6 mb-6 text-left">
+                        <div class="p-3.5 bg-white rounded-[28px] shadow-sm border border-slate-100 text-[#F59E0B]">
+                            <i data-lucide="zap" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black text-[#0F172A]">4. 総括</h2>
+                    </div>
+                    <div class="bg-white p-10 rounded-[80px] shadow-2xl border border-white flex-col flex justify-center w-full max-w-5xl relative overflow-hidden">
+                        <h3 class="text-5xl font-black text-[#0F172A] mb-8 leading-tight tracking-tighter text-center">
+                            正しい<span class="text-[#10B981] italic">優先順位</span>が、<br>
+                            あなたの脳を再構築する。
+                        </h3>
+                        <p class="text-2xl text-[#64748B] mb-10 font-bold leading-relaxed max-w-4xl mx-auto text-center">
+                            小さな選択が、数年後の脳を作ります。<br>
+                            まずは「野菜から」と「朝の散歩」から始めましょう。
+                        </p>
+                        <div class="flex justify-center">
+                            <div class="px-12 py-5 bg-[#0F172A] text-white font-black rounded-full text-3xl shadow-2xl flex items-center gap-6 group">
+                                今日、ここから
+                                <i data-lucide="arrow-right" class="text-[#10B981] w-10 h-10 group-hover:translate-x-3 transition-transform duration-300" stroke-width="3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function updateSlide() {
+            const slide = slideData[currentSlide];
+            const content = document.getElementById('slide-content');
+            
+            // フェードアウト効果
+            content.style.opacity = 0;
+            
+            setTimeout(() => {
+                content.innerHTML = slide.html;
+                lucide.createIcons(); // アイコンを再生成
+                
+                // ナビゲーションの更新
+                document.getElementById('slide-current-num').innerText = String(currentSlide + 1).padStart(2, '0');
+                document.getElementById('progress-bar').style.width = ((currentSlide + 1) / slideData.length * 100) + '%';
+                
+                // ボタンの無効化制御
+                document.getElementById('prev-btn').disabled = currentSlide === 0;
+                document.getElementById('next-btn').disabled = currentSlide === slideData.length - 1;
+                
+                content.style.opacity = 1;
+            }, 200);
+        }
+
+        function nextSlide() {
+            if (currentSlide < slideData.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // キーボード操作
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // 印刷用コンテンツの生成
+        function setupPrintArea() {
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = slideData.map((slide, index) => `
+                <div class="print-slide w-full h-[794px] overflow-hidden border-b border-gray-100 break-after-page flex flex-col items-center justify-center relative p-8">
+                    <div class="w-full h-full max-w-[1100px] border border-gray-200 rounded-[40px] overflow-hidden bg-white text-black">
+                        ${slide.html}
+                    </div>
+                    <div class="absolute bottom-4 right-8 text-sm text-gray-400 font-mono no-print">
+                        BRAIN RECOVERY 2026 - Slide ${index + 1}
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.onload = () => {
+            updateSlide();
+            setupPrintArea();
+        };
+    </script>
+</body>
+</html>
